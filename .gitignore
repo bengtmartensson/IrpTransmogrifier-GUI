@@ -1,0 +1,8 @@
+.nb-gradle
+.nb-gradle-properties
+*~
+.gradle
+build
+gradle
+gradlew
+gradlew.bat
