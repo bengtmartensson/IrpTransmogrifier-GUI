@@ -18,8 +18,12 @@
 package org.harctoolbox.transmogrifiergui;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import org.harctoolbox.guicomponents.SelectFile;
+import org.harctoolbox.ircore.InvalidArgumentException;
 
 public class Gui extends javax.swing.JFrame {
 
@@ -32,11 +36,23 @@ public class Gui extends javax.swing.JFrame {
 
     private static Gui instance;
 
+    private ConsoleInternalFrame consoleInternalFrame;
+
+    private final static Logger logger = Logger.getLogger(Gui.class.getName());
+
     /**
      * Creates new form NewMDIApplication
      */
     public Gui() {
         initComponents();
+        setupConsole();
+        System.out.println("Welcome to TransmogrifierGUI!");
+    }
+
+    private void setupConsole() {
+        consoleInternalFrame = ConsoleInternalFrame.newConsoleInternalFrame();
+        desktopPane.add(consoleInternalFrame);
+        consoleInternalFrame.setVisible(true);
     }
 
     /**
@@ -55,6 +71,7 @@ public class Gui extends javax.swing.JFrame {
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
         exitMenuItem = new javax.swing.JMenuItem();
+        newMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         cutMenuItem = new javax.swing.JMenuItem();
         copyMenuItem = new javax.swing.JMenuItem();
@@ -68,6 +85,17 @@ public class Gui extends javax.swing.JFrame {
         aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        javax.swing.GroupLayout desktopPaneLayout = new javax.swing.GroupLayout(desktopPane);
+        desktopPane.setLayout(desktopPaneLayout);
+        desktopPaneLayout.setHorizontalGroup(
+            desktopPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 911, Short.MAX_VALUE)
+        );
+        desktopPaneLayout.setVerticalGroup(
+            desktopPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 419, Short.MAX_VALUE)
+        );
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
@@ -100,6 +128,15 @@ public class Gui extends javax.swing.JFrame {
             }
         });
         fileMenu.add(exitMenuItem);
+
+        newMenuItem.setMnemonic('N');
+        newMenuItem.setText("New");
+        newMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(newMenuItem);
 
         menuBar.add(fileMenu);
 
@@ -163,14 +200,14 @@ public class Gui extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(desktopPane, javax.swing.GroupLayout.PREFERRED_SIZE, 764, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(desktopPane)
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(desktopPane, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(desktopPane)
+                .addGap(0, 0, 0))
         );
 
         pack();
@@ -182,14 +219,27 @@ public class Gui extends javax.swing.JFrame {
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         InternalFrame internalFrame = new InternalFrame();
-        this.desktopPane.add(internalFrame);
+        desktopPane.add(internalFrame);
         internalFrame.setVisible(true);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
         File importFile = SelectFile.selectFile(this, "Select file containing raw named IR sequences",
                 null/*properties.getDefaultImportDir()*/, false, false, JFileChooser.FILES_ONLY, IMPORTFILETYPES);
+        try {
+            TableInternalFrame table = new TableInternalFrame(importFile);
+            desktopPane.add(table);
+            table.setVisible(true);
+        } catch (IOException | InvalidArgumentException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_openMenuItemActionPerformed
+
+    private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
+        TableInternalFrame table = new TableInternalFrame();
+        desktopPane.add(table);
+        table.setVisible(true);
+    }//GEN-LAST:event_newMenuItemActionPerformed
 
     private static final String[][] IMPORTFILETYPES = {
         //new String[]{"Girr files (*.girr)", "girr" },
@@ -197,14 +247,14 @@ public class Gui extends javax.swing.JFrame {
         new String[]{"Text files (*.txt)", "txt"}
     };
 
-    private static void setNimbus() {
+    private static void setLAF(String lafName) {
         /* Set the Nimbus look and feel */
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
+                if (lafName.equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
@@ -218,7 +268,7 @@ public class Gui extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        setNimbus();
+        setLAF("Nimbus");
         invoke();
     }
 
@@ -244,6 +294,7 @@ public class Gui extends javax.swing.JFrame {
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem newMenuItem;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenu optionsMenu;
     private javax.swing.JMenuItem pasteMenuItem;
