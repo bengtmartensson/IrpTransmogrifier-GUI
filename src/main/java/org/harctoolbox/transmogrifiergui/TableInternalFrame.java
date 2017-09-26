@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.harctoolbox.ircore.InvalidArgumentException;
 import org.harctoolbox.ircore.IrSequence;
 import org.harctoolbox.ircore.IrSignal;
@@ -62,6 +65,72 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
             rawTableModel.addSignal(signal);
         }
         return new TableKit(rawTableModel, new RawIrSignal.RawTableColumnModel());
+    }
+
+    private <T extends TableModel> void enableSorter(JTable table, boolean state) {
+        @SuppressWarnings("unchecked")
+        TableRowSorter<T> tableRowSorter = state ? new TableRowSorter<>((T) table.getModel()) : null;
+        table.setRowSorter(tableRowSorter);
+    }
+
+    // If using sorter and deleting several rows, need to compute the to-be-removed model-indexes,
+    // sort them, and remove them in descending order. I presently do not care enough...
+    private static void deleteTableSelectedRows(JTable table) throws ErroneousSelectionException {
+        barfIfNoneSelected(table);
+        if (table.getRowSorter() != null && table.getSelectedRowCount() > 1) {
+            logger.severe("Deleting several rows with enabled row sorter not yet implemented");
+            return;
+        }
+        int row = table.getSelectedRow();
+
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+
+        for (int i = table.getSelectedRowCount(); i > 0; i--)
+            tableModel.removeRow(table.convertRowIndexToModel(row + i - 1));
+    }
+
+    private static void barfIfManySelected(JTable table) throws ErroneousSelectionException {
+        if (table.getSelectedRowCount() > 1)
+            throw new ErroneousSelectionException("Only one row may be selected");
+    }
+
+    private static void barfIfNoneSelected(JTable table) throws ErroneousSelectionException {
+        if (table.getSelectedRow() == -1)
+            throw new ErroneousSelectionException("No row selected");
+    }
+
+    private static void barfIfNotExactlyOneSelected(JTable table) throws ErroneousSelectionException {
+        barfIfManySelected(table);
+        barfIfNoneSelected(table);
+    }
+
+    private void printTableSelectedRow(JTable table) throws ErroneousSelectionException {
+        barfIfNotExactlyOneSelected(table);
+        int modelRow = table.convertRowIndexToModel(table.getSelectedRow());
+        NamedIrSignal.LearnedIrSignalTableModel tableModel = (NamedIrSignal.LearnedIrSignalTableModel) table.getModel();
+        String str = tableModel.toPrintString(modelRow);
+        System.out.println(str);
+    }
+
+//    public JTable getTable() {
+//        return table;
+//    }
+
+    public void applyEdit(String str) {
+        //NamedIrSignal.LearnedIrSignalTableModel tableModel = (NamedIrSignal.LearnedIrSignalTableModel) table.getModel();
+        int row = table.getSelectedRow();
+        int column = table.getSelectedColumn();
+        if (row >= 0 && column >= 0) {
+            int r = table.convertRowIndexToModel(row);
+            int c = table.convertColumnIndexToModel(column);
+            Class<?> clazz = tableModel.getColumnClass(column);
+            Object thing = str.trim().isEmpty() ? null
+                    : clazz == Integer.class ? Integer.parseInt(str)
+                    : clazz == Boolean.class ? Boolean.parseBoolean(str)
+                    : str;
+            tableModel.setValueAt(thing, r, c);
+            table.repaint();
+        }
     }
 
     private static class TableKit {
@@ -116,12 +185,13 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
      * Creates new form TableInternalFrame.
      * @param tableKit
      */
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     private TableInternalFrame(TableKit tableKit, String title) {
         this.tableModel = tableKit.getTableModel();
         this.tableColumnModel = tableKit.getTableColumnModel();
         this.frequency = tableKit.getFrequency();
         initComponents();
-        setTitle(title);
+        setTitle(title + " [Raw sequences]");
     }
 
     public TableInternalFrame() {
@@ -172,16 +242,170 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        rawTablePopupMenu = new javax.swing.JPopupMenu();
+        rawSorterCheckBoxMenuItem = new javax.swing.JCheckBoxMenuItem();
+        jSeparator25 = new javax.swing.JPopupMenu.Separator();
+        moveUpMenuItem = new javax.swing.JMenuItem();
+        moveDownMenuItem = new javax.swing.JMenuItem();
+        jSeparator11 = new javax.swing.JPopupMenu.Separator();
+        rawFromClipboardMenuItem = new javax.swing.JMenuItem();
+        jSeparator18 = new javax.swing.JPopupMenu.Separator();
+        plotMenuItem = new javax.swing.JMenuItem();
+        deleteMenuItem = new javax.swing.JMenuItem();
+        printTableRowMenuItem = new javax.swing.JMenuItem();
+        jSeparator28 = new javax.swing.JPopupMenu.Separator();
+        rawCopyAllMenuItem = new javax.swing.JMenuItem();
+        rawCopySelectionMenuItem = new javax.swing.JMenuItem();
+        jSeparator29 = new javax.swing.JPopupMenu.Separator();
+        hideColumnMenuItem = new javax.swing.JMenuItem();
+        resetRawTableColumnsMenuItem = new javax.swing.JMenuItem();
+        removeUnusedMenuItem1 = new javax.swing.JMenuItem();
+        hideUninterestingColumnsMenuItem1 = new javax.swing.JMenuItem();
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
+
+        rawSorterCheckBoxMenuItem.setSelected(Properties.getSorterOnRawTable());
+        rawSorterCheckBoxMenuItem.setText("Enable sorter");
+        rawSorterCheckBoxMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rawSorterCheckBoxMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(rawSorterCheckBoxMenuItem);
+        rawTablePopupMenu.add(jSeparator25);
+
+        moveUpMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_UP, java.awt.event.InputEvent.CTRL_MASK));
+        moveUpMenuItem.setMnemonic('U');
+        moveUpMenuItem.setText("Move Up");
+        moveUpMenuItem.setEnabled(!Properties.getSorterOnRawTable());
+        moveUpMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveUpMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(moveUpMenuItem);
+
+        moveDownMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DOWN, java.awt.event.InputEvent.CTRL_MASK));
+        moveDownMenuItem.setMnemonic('D');
+        moveDownMenuItem.setText("Move Down");
+        moveDownMenuItem.setEnabled(!Properties.getSorterOnRawTable());
+        moveDownMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveDownMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(moveDownMenuItem);
+        rawTablePopupMenu.add(jSeparator11);
+
+        rawFromClipboardMenuItem.setText("Import signal from clipboard");
+        rawFromClipboardMenuItem.setToolTipText("Not yet implemented");
+        rawFromClipboardMenuItem.setEnabled(false);
+        rawFromClipboardMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rawFromClipboardMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(rawFromClipboardMenuItem);
+        rawTablePopupMenu.add(jSeparator18);
+
+        plotMenuItem.setText("Plot selected");
+        plotMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                plotMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(plotMenuItem);
+
+        deleteMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, 0));
+        deleteMenuItem.setText("Delete selected");
+        deleteMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(deleteMenuItem);
+
+        printTableRowMenuItem.setText("Print selected to console");
+        printTableRowMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printTableRowMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(printTableRowMenuItem);
+        rawTablePopupMenu.add(jSeparator28);
+
+        rawCopyAllMenuItem.setText("Copy all to clipboard");
+        rawCopyAllMenuItem.setToolTipText("Not yet element");
+        rawCopyAllMenuItem.setEnabled(false);
+        rawCopyAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rawCopyAllMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(rawCopyAllMenuItem);
+
+        rawCopySelectionMenuItem.setText("Copy selected to clipboard");
+        rawCopySelectionMenuItem.setToolTipText("Not yet implemented");
+        rawCopySelectionMenuItem.setEnabled(false);
+        rawCopySelectionMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rawCopySelectionMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(rawCopySelectionMenuItem);
+        rawTablePopupMenu.add(jSeparator29);
+
+        hideColumnMenuItem.setText("Hide selected column");
+        hideColumnMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideColumnMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(hideColumnMenuItem);
+
+        resetRawTableColumnsMenuItem.setText("Reset columns");
+        resetRawTableColumnsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetRawTableColumnsMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(resetRawTableColumnsMenuItem);
+
+        removeUnusedMenuItem1.setText("Hide unused columns");
+        removeUnusedMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeUnusedMenuItem1ActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(removeUnusedMenuItem1);
+
+        hideUninterestingColumnsMenuItem1.setText("Hide uninteresting columns");
+        hideUninterestingColumnsMenuItem1.setToolTipText("Hide the columns #, Date, as well as all columns with identical content.");
+        hideUninterestingColumnsMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideUninterestingColumnsMenuItem1ActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(hideUninterestingColumnsMenuItem1);
 
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
 
+        jScrollPane1.setComponentPopupMenu(rawTablePopupMenu);
+
         table.setModel(tableModel);
         table.setColumnSelectionAllowed(true);
+        table.setComponentPopupMenu(rawTablePopupMenu);
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                tableMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                tableMouseReleased(evt);
+            }
+        });
         jScrollPane1.setViewportView(table);
         table.setColumnModel(tableColumnModel);
 
@@ -189,9 +413,9 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 795, Short.MAX_VALUE)
+            .addGap(0, 990, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 795, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 990, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -203,9 +427,177 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void rawSorterCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rawSorterCheckBoxMenuItemActionPerformed
+        boolean state = rawSorterCheckBoxMenuItem.isSelected();
+        Properties.setSorterOnRawTable(state);
+        enableSorter(table, state);
+        moveDownMenuItem.setEnabled(!state);
+        moveUpMenuItem.setEnabled(!state);
+    }//GEN-LAST:event_rawSorterCheckBoxMenuItemActionPerformed
+
+    private void moveUpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpMenuItemActionPerformed
+        tableMoveSelection(table, true);
+    }//GEN-LAST:event_moveUpMenuItemActionPerformed
+
+    private void moveDownMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownMenuItemActionPerformed
+        tableMoveSelection(table, false);
+    }//GEN-LAST:event_moveDownMenuItemActionPerformed
+
+    // Requires the row sorter to be disabled
+    private void tableMoveSelection(JTable table, boolean up) {
+        int row = table.getSelectedRow();
+        int lastRow = row + table.getSelectedRowCount() - 1;
+
+        if (row < 0) {
+            logger.severe("No signal selected");
+            return;
+        }
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+        if (up) {
+            if (row == 0) {
+                logger.severe("Cannot move up");
+                return;
+            }
+        } else { // down
+            if (lastRow >= tableModel.getRowCount() - 1) {
+                logger.severe("Cannot move down");
+                return;
+            }
+        }
+
+        if (up) {
+            tableModel.moveRow(row, lastRow, row - 1);
+            table.addRowSelectionInterval(row - 1, row - 1);
+            table.removeRowSelectionInterval(lastRow, lastRow);
+        } else {
+            tableModel.moveRow(row, lastRow, row + 1);
+            table.addRowSelectionInterval(lastRow + 1, lastRow + 1);
+            table.removeRowSelectionInterval(row, row);
+        }
+    }
+
+    private void rawFromClipboardMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rawFromClipboardMenuItemActionPerformed
+//        String text = (new CopyClipboardText(null)).fromClipboard();
+//        try {
+//            IrSignal irSignal = InterpretStringHardware.interpretString(text, IrpUtils.defaultFrequency,
+//                properties.getInvokeRepeatFinder(), properties.getInvokeCleaner(),
+//                properties.getAbsoluteTolerance(), properties.getRelativeTolerance());
+//            RawIrSignal rawIrSignal = new RawIrSignal(irSignal, "clipboard", "Signal read from clipboard", true);
+//            registerRawCommand(rawIrSignal);
+//        } catch (IrpMasterException ex) {
+//            logger.severe(ex);;
+//        }
+        logger.severe("Not yet implemented");
+    }//GEN-LAST:event_rawFromClipboardMenuItemActionPerformed
+
+    private void plotMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plotMenuItemActionPerformed
+//        RawIrSignal cir = table.get..getCapturedIrSignal(table.convertRowIndexToModel(table.getSelectedRow()));
+//        scrutinizeIrSignal(cir.getIrSignal());
+        logger.severe("Plot not yet implemented");
+    }//GEN-LAST:event_plotMenuItemActionPerformed
+
+    private void deleteMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteMenuItemActionPerformed
+        try {
+            deleteTableSelectedRows(table);
+        } catch (ErroneousSelectionException ex) {
+            logger.severe(ex.getLocalizedMessage());
+        }
+    }//GEN-LAST:event_deleteMenuItemActionPerformed
+
+    private void printTableRowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printTableRowMenuItemActionPerformed
+        try {
+            printTableSelectedRow(table);
+        } catch (ErroneousSelectionException ex) {
+            logger.severe(ex.getLocalizedMessage());
+        }
+    }//GEN-LAST:event_printTableRowMenuItemActionPerformed
+
+    private void rawCopyAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rawCopyAllMenuItemActionPerformed
+//        copyTableToClipboard(rawTable, false);
+        logger.severe("Not yet implemented");
+    }//GEN-LAST:event_rawCopyAllMenuItemActionPerformed
+
+    private void rawCopySelectionMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rawCopySelectionMenuItemActionPerformed
+//        copyTableToClipboard(rawTable, true);
+        logger.severe("Not yet implemented");
+    }//GEN-LAST:event_rawCopySelectionMenuItemActionPerformed
+
+    private void hideColumnMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideColumnMenuItemActionPerformed
+//        int selectedColumn = rawTable.getSelectedColumn();
+//        try {
+//            rawTableColumnModel.removeColumn(selectedColumn);
+//        } catch (ArrayIndexOutOfBoundsException ex) {
+//            guiUtils.error(selectedColumn < 0 ? "No column selected." : "No column # " + selectedColumn + ".");
+//        }
+        logger.severe("Not yet implemented");
+    }//GEN-LAST:event_hideColumnMenuItemActionPerformed
+
+    private void resetRawTableColumnsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetRawTableColumnsMenuItemActionPerformed
+        //tableColumnModel.reset();
+        logger.severe("Not yet implemented");
+    }//GEN-LAST:event_resetRawTableColumnsMenuItemActionPerformed
+
+    private void removeUnusedMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeUnusedMenuItem1ActionPerformed
+//        ArrayList<Integer>list = rawTableModel.getUnusedColumns();
+//        rawTableColumnModel.removeColumns(list);
+        logger.severe("Not yet implemented");
+    }//GEN-LAST:event_removeUnusedMenuItem1ActionPerformed
+
+    private void hideUninterestingColumnsMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideUninterestingColumnsMenuItem1ActionPerformed
+//        ArrayList<Integer>list = rawTableModel.getUninterestingColumns();
+//        rawTableColumnModel.removeColumns(list);
+        logger.severe("Not yet implemented");
+    }//GEN-LAST:event_hideUninterestingColumnsMenuItem1ActionPerformed
+
+    private void tableMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableMousePressed
+
+    }//GEN-LAST:event_tableMousePressed
+
+    private void tableMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableMouseReleased
+        int row = table.getSelectedRow();
+        int column = table.getSelectedColumn();
+        if (row >= 0 && column >= 0) {
+            int rowModel = table.convertRowIndexToModel(row);
+            int columnModel = table.convertColumnIndexToModel(column);
+            Object thing = table.getModel().getValueAt(rowModel, columnModel);
+            String presentContent = thing != null ? thing.toString() : null;
+            Gui.getInstance().setEditClient(presentContent, this, tableModel.isCellEditable(rowModel, columnModel));
+//            JTextField editingTextField = Gui.getInstance().getEditingTextField();
+//            editingTextField.setText(thing != null ? thing.toString() : null);
+//            editingTextField.setEditable(tableModel.isCellEditable(row, column));
+//            //editingTextField.setEnabled(parameterTableModel.getColumnClass(column) != Boolean.class);
+        }
+    }//GEN-LAST:event_tableMouseReleased
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem deleteMenuItem;
+    private javax.swing.JMenuItem hideColumnMenuItem;
+    private javax.swing.JMenuItem hideUninterestingColumnsMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu.Separator jSeparator11;
+    private javax.swing.JPopupMenu.Separator jSeparator18;
+    private javax.swing.JPopupMenu.Separator jSeparator25;
+    private javax.swing.JPopupMenu.Separator jSeparator28;
+    private javax.swing.JPopupMenu.Separator jSeparator29;
+    private javax.swing.JMenuItem moveDownMenuItem;
+    private javax.swing.JMenuItem moveUpMenuItem;
+    private javax.swing.JMenuItem plotMenuItem;
+    private javax.swing.JMenuItem printTableRowMenuItem;
+    private javax.swing.JMenuItem rawCopyAllMenuItem;
+    private javax.swing.JMenuItem rawCopySelectionMenuItem;
+    private javax.swing.JMenuItem rawFromClipboardMenuItem;
+    private javax.swing.JCheckBoxMenuItem rawSorterCheckBoxMenuItem;
+    private javax.swing.JPopupMenu rawTablePopupMenu;
+    private javax.swing.JMenuItem removeUnusedMenuItem1;
+    private javax.swing.JMenuItem resetRawTableColumnsMenuItem;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
+
+    private static class ErroneousSelectionException extends Exception {
+
+        ErroneousSelectionException(String msg) {
+            super(msg);
+        }
+    }
 }

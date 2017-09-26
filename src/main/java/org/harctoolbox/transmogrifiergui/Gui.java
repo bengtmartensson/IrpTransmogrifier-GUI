@@ -19,6 +19,8 @@ package org.harctoolbox.transmogrifiergui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -39,13 +41,16 @@ public class Gui extends javax.swing.JFrame {
     private ConsoleInternalFrame consoleInternalFrame;
 
     private final static Logger logger = Logger.getLogger(Gui.class.getName());
+    private TableInternalFrame editClient = null;
 
     /**
      * Creates new form NewMDIApplication
+     * @param data
      */
-    public Gui() {
+    public Gui(List<String> data) {
         initComponents();
         setupConsole();
+        setupInitData(data);
         System.out.println("Welcome to TransmogrifierGUI!");
     }
 
@@ -53,6 +58,22 @@ public class Gui extends javax.swing.JFrame {
         consoleInternalFrame = ConsoleInternalFrame.newConsoleInternalFrame();
         desktopPane.add(consoleInternalFrame);
         consoleInternalFrame.setVisible(true);
+    }
+
+    private void setupInitData(List<String> data) {
+        int lowerConsole = consoleInternalFrame.getY() + consoleInternalFrame.getHeight();
+        data.forEach((d) -> {
+            try {
+                if (!d.startsWith("-")) { // just for convenience now
+                    TableInternalFrame frame = new TableInternalFrame(new File(d));
+                    desktopPane.add(frame);
+                    frame.setLocation(0, lowerConsole);
+                    frame.setVisible(true);
+                }
+            } catch (IOException | InvalidArgumentException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        });
     }
 
     /**
@@ -64,6 +85,9 @@ public class Gui extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        editingTextField = new javax.swing.JTextField();
         desktopPane = new javax.swing.JDesktopPane();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
@@ -85,17 +109,49 @@ public class Gui extends javax.swing.JFrame {
         aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("IrpTransmogrifier GUI EXPERIMENTAL");
+
+        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.Y_AXIS));
+
+        editingTextField.setEditable(false);
+        editingTextField.setToolTipText("Text area for editing table cell content. Press RETURN to finish edit.");
+        editingTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editingTextFieldActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(editingTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 1000, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(editingTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        jPanel1.add(jPanel2);
 
         javax.swing.GroupLayout desktopPaneLayout = new javax.swing.GroupLayout(desktopPane);
         desktopPane.setLayout(desktopPaneLayout);
         desktopPaneLayout.setHorizontalGroup(
             desktopPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 911, Short.MAX_VALUE)
+            .addGap(0, 1024, Short.MAX_VALUE)
         );
         desktopPaneLayout.setVerticalGroup(
             desktopPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 419, Short.MAX_VALUE)
+            .addGap(0, 363, Short.MAX_VALUE)
         );
+
+        jPanel1.add(desktopPane);
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
@@ -199,15 +255,11 @@ public class Gui extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(desktopPane)
-                .addGap(0, 0, 0))
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(desktopPane)
-                .addGap(0, 0, 0))
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -241,6 +293,14 @@ public class Gui extends javax.swing.JFrame {
         table.setVisible(true);
     }//GEN-LAST:event_newMenuItemActionPerformed
 
+    private void editingTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editingTextFieldActionPerformed
+        if (editClient == null) {
+            logger.severe("No edit target");
+            return;
+        }
+        editClient.applyEdit(editingTextField.getText());
+    }//GEN-LAST:event_editingTextFieldActionPerformed
+
     private static final String[][] IMPORTFILETYPES = {
         //new String[]{"Girr files (*.girr)", "girr" },
         new String[]{"ICT files (*.ict)", "ict"},
@@ -269,13 +329,13 @@ public class Gui extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         setLAF("Nimbus");
-        invoke();
+        invoke(Arrays.asList(args));
     }
 
     /** Creates and displays the form */
-    private static void invoke() {
+    private static void invoke(List<String> data) {
         java.awt.EventQueue.invokeLater(() -> {
-            instance = new Gui();
+            instance = new Gui(data);
             instance.setVisible(true);
         });
     }
@@ -289,10 +349,13 @@ public class Gui extends javax.swing.JFrame {
     private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JDesktopPane desktopPane;
     private javax.swing.JMenu editMenu;
+    private javax.swing.JTextField editingTextField;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newMenuItem;
     private javax.swing.JMenuItem openMenuItem;
@@ -302,4 +365,9 @@ public class Gui extends javax.swing.JFrame {
     private javax.swing.JMenuItem saveMenuItem;
     // End of variables declaration//GEN-END:variables
 
+    void setEditClient(String presentContent, TableInternalFrame client, boolean editable) {
+        editingTextField.setText(presentContent);
+        editingTextField.setEditable(editable);
+        editClient = client;
+    }
 }

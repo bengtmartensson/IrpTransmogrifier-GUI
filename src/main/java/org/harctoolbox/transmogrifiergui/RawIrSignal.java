@@ -21,7 +21,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.harctoolbox.ircore.IrSequence;
 import org.harctoolbox.ircore.IrSignal;
-import org.harctoolbox.ircore.ModulatedIrSequence;
 import org.harctoolbox.ircore.OddSequenceLengthException;
 
 /**
@@ -142,14 +141,14 @@ public class RawIrSignal extends NamedIrSignal {
 
         //public static final int posNumber = 0;
         //public static final int posDate = 1;
-        public static final int posName = 0;
-        public static final int posIntro = 1;
-        public static final int posRepetition = 2;
-        public static final int posEnding = 3;
-        public static final int posVerified = 4;
+        public static final int POS_NAME = 0;
+        public static final int POS_INTRO = 1;
+        public static final int POS_REPETITION = 2;
+        public static final int POS_ENDING = 3;
+        public static final int POS_VERIFIED = 4;
         //public static final int posComment = 9;
         //public static final int posFrequency = 7;
-        public static final int posCapturedIrSignal = columnNames.length - 1;
+        public static final int POS_CAPTUREDIRSIGNAL = columnNames.length - 1;
 
         CapturedIrSignalColumns() {
             super(columnNames, widths, classes, /*dummyArray,*/ 1);
@@ -157,7 +156,7 @@ public class RawIrSignal extends NamedIrSignal {
 
         @Override
         public int getPosName() {
-            return posName;
+            return POS_NAME;
         }
 
 //        @Override
@@ -167,12 +166,13 @@ public class RawIrSignal extends NamedIrSignal {
 
         @Override
         public int getPosIrSignal() {
-            return posCapturedIrSignal;
+            return POS_CAPTUREDIRSIGNAL;
         }
 
         @Override
         public boolean isEditable(int i) {
-            return i > posEnding;
+            return i < POS_VERIFIED;
+            //return i > POS_ENDING;
         }
 
 //        @Override
@@ -187,7 +187,7 @@ public class RawIrSignal extends NamedIrSignal {
 
         @Override
         public int getPosVerified() {
-            return posVerified;
+            return POS_VERIFIED;
         }
 
         @Override
@@ -229,7 +229,7 @@ public class RawIrSignal extends NamedIrSignal {
 
         public RawIrSignal getCapturedIrSignal(int row) {
             return validRow(row)
-                    ? (RawIrSignal) getValueAt(row, CapturedIrSignalColumns.posCapturedIrSignal)
+                    ? (RawIrSignal) getValueAt(row, CapturedIrSignalColumns.POS_CAPTUREDIRSIGNAL)
                     : null;
         }
 
@@ -245,19 +245,19 @@ public class RawIrSignal extends NamedIrSignal {
             try {
                 RawIrSignal rawIrSignal = getCapturedIrSignal(row);
                 switch (column) {
-                    case CapturedIrSignalColumns.posIntro:
+                    case CapturedIrSignalColumns.POS_INTRO:
                         rawIrSignal.setIntroSequence((String) getValueAt(row, column));
                         break;
-                    case CapturedIrSignalColumns.posRepetition:
+                    case CapturedIrSignalColumns.POS_REPETITION:
                         rawIrSignal.setRepeatSequence((String) getValueAt(row, column));
                         break;
-                    case CapturedIrSignalColumns.posEnding:
+                    case CapturedIrSignalColumns.POS_ENDING:
                         rawIrSignal.setEndingSequence((String) getValueAt(row, column));
                         break;
-                    case CapturedIrSignalColumns.posVerified:
+                    case CapturedIrSignalColumns.POS_VERIFIED:
                         rawIrSignal.setValidated((Boolean) getValueAt(row, column));
                         break;
-                    case CapturedIrSignalColumns.posName:
+                    case CapturedIrSignalColumns.POS_NAME:
                         rawIrSignal.setName((String) getValueAt(row, column));
                         break;
 //                    case CapturedIrSignalColumns.posComment:

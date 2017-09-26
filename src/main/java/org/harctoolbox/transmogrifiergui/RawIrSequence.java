@@ -20,7 +20,6 @@ package org.harctoolbox.transmogrifiergui;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.harctoolbox.ircore.IrSequence;
-import org.harctoolbox.ircore.IrSignal;
 import org.harctoolbox.ircore.OddSequenceLengthException;
 
 /**
@@ -111,8 +110,9 @@ public class RawIrSequence extends NamedIrSignal {
 
     @Override
     public String csvString(String separator) { // FIXME
-        StringBuilder str = new StringBuilder(super.csvString(separator));
-        //str.append(irSequence.getFrequency()).append(separator);
+        //StringBuilder str = new StringBuilder(super.csvString(separator));
+        StringBuilder str = new StringBuilder(getName());
+        str./*append(irSequence.getFrequency()).*/append(separator);
         str.append(irSequence.toString(true));
 //        str.append(irSequence.getRepeatSequence().toString(true)).append(separator);
 //        str.append(irSequence.getEndingSequence().toString(true)).append(separator);
@@ -124,7 +124,7 @@ public class RawIrSequence extends NamedIrSignal {
 
     @Override
     public String toPrintString() {
-        return csvString(", ");
+        return csvString("\t");
     }
 
     private static class CapturedIrSignalColumns extends NamedIrSignal.AbstractColumnFunction {
@@ -171,7 +171,8 @@ public class RawIrSequence extends NamedIrSignal {
 
         @Override
         public boolean isEditable(int i) {
-            return i > POS_SEQUENCE;
+            return i < POS_VERIFIED;
+            //return i > POS_SEQUENCE;
         }
 
 //        @Override
@@ -276,7 +277,9 @@ public class RawIrSequence extends NamedIrSignal {
         @Override
         public String toPrintString(int row) {
             RawIrSequence cir = getCapturedIrSequence(row);
-            return super.toPrintString(row) + ": " + (cir != null ? cir.toPrintString() : "null");
+            //return super.toPrintString(row) + ": " + (cir != null ? cir.toPrintString() : "null");
+            return cir != null ? cir.toPrintString() : "null";
+
         }
 
         @Override

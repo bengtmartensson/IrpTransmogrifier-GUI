@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Bengt Martensson
+ * Copyright (C) 2017
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,17 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.harctoolbox.transmogrifiergui;
 
-import org.harctoolbox.irp.IrpTransmogrifier;
+public class Properties {
 
-public class Main {
-    public static void main(String[] args) {
-        if (args.length == 0 || args[0].equals("--gui"))
-            //Gui.main(args);
-            Gui.main(new String[] { "/home/bengt/jp1/mce_keyboard/A to Z .ict" });
-        else
-            IrpTransmogrifier.main(args);
+    static boolean getSorterOnRawTable() {
+        return false;
+    }
+
+    static void setSorterOnRawTable(boolean state) {
+
+    }
+
+    private Properties() {
     }
 }

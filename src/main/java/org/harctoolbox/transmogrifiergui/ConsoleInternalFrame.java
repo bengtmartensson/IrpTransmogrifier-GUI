@@ -16,7 +16,13 @@
  */
 package org.harctoolbox.transmogrifiergui;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.harctoolbox.guicomponents.Console;
+
 public class ConsoleInternalFrame extends javax.swing.JInternalFrame {
+
+    private final static Logger logger = Logger.getLogger(Gui.class.getName());
 
     private static ConsoleInternalFrame instance = null;
 
@@ -27,27 +33,29 @@ public class ConsoleInternalFrame extends javax.swing.JInternalFrame {
         return instance;
     }
 
+    private static class LoggerErrorFunction implements Console.IErrorFunction {
+
+        @Override
+        public void err(Exception ex, String message) {
+            if (ex == null)
+                logger.severe(message);
+            else
+                logger.log(Level.SEVERE, "{0}: {1}", new Object[]{ex.getLocalizedMessage(), message});
+        }
+
+        @Override
+        public void err(String str) {
+            logger.severe(str);
+        }
+    }
+
     /**
      * Creates new form ConsoleInternalFrame
      */
     public ConsoleInternalFrame() {
         initComponents();
 
-//        console.setErrorFunction(
-//                new org.harctoolbox.guicomponents.Console.IErrorFunction() {
-//            @Override
-//            public void err(Exception ex, String message) {
-//                if (ex == null)
-//                    guiUtils.error(message);
-//                else
-//                    guiUtils.error(ex, message);
-//            }
-//
-//            @Override
-//            public void err(String str) {
-//                guiUtils.error(str);
-//            }
-//        });
+        console.setErrorFunction(new LoggerErrorFunction());
         console.setStdErr();
         console.setStdOut();
     }
@@ -72,15 +80,13 @@ public class ConsoleInternalFrame extends javax.swing.JInternalFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 667, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(console, javax.swing.GroupLayout.DEFAULT_SIZE, 667, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(console, javax.swing.GroupLayout.DEFAULT_SIZE, 990, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 125, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(console, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE))
+            .addComponent(console, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
         );
 
         pack();
