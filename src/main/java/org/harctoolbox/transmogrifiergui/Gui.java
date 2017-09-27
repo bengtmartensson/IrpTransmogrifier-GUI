@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JInternalFrame;
 import org.harctoolbox.guicomponents.SelectFile;
 import org.harctoolbox.ircore.InvalidArgumentException;
 
@@ -56,8 +57,7 @@ public class Gui extends javax.swing.JFrame {
 
     private void setupConsole() {
         consoleInternalFrame = ConsoleInternalFrame.newConsoleInternalFrame();
-        desktopPane.add(consoleInternalFrame);
-        consoleInternalFrame.setVisible(true);
+        addInternalFrame(consoleInternalFrame);
     }
 
     private void setupInitData(List<String> data) {
@@ -66,9 +66,8 @@ public class Gui extends javax.swing.JFrame {
             try {
                 if (!d.startsWith("-")) { // just for convenience now
                     TableInternalFrame frame = new TableInternalFrame(new File(d));
-                    desktopPane.add(frame);
+                    addInternalFrame(frame);
                     frame.setLocation(0, lowerConsole);
-                    frame.setVisible(true);
                 }
             } catch (IOException | InvalidArgumentException ex) {
                 logger.log(Level.SEVERE, null, ex);
@@ -104,6 +103,7 @@ public class Gui extends javax.swing.JFrame {
         optionsMenu = new javax.swing.JMenu();
         actionsMenu = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         contentMenuItem = new javax.swing.JMenuItem();
         aboutMenuItem = new javax.swing.JMenuItem();
@@ -232,6 +232,14 @@ public class Gui extends javax.swing.JFrame {
         });
         actionsMenu.add(jMenuItem1);
 
+        jMenuItem2.setText("jMenuItem2");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        actionsMenu.add(jMenuItem2);
+
         menuBar.add(actionsMenu);
 
         helpMenu.setMnemonic('h');
@@ -270,27 +278,21 @@ public class Gui extends javax.swing.JFrame {
     }//GEN-LAST:event_exitMenuItemActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        InternalFrame internalFrame = new InternalFrame();
-        desktopPane.add(internalFrame);
-        internalFrame.setVisible(true);
+        addInternalFrame(new InternalFrame());
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
         File importFile = SelectFile.selectFile(this, "Select file containing raw named IR sequences",
                 null/*properties.getDefaultImportDir()*/, false, false, JFileChooser.FILES_ONLY, IMPORTFILETYPES);
         try {
-            TableInternalFrame table = new TableInternalFrame(importFile);
-            desktopPane.add(table);
-            table.setVisible(true);
+            addInternalFrame(new TableInternalFrame(importFile));
         } catch (IOException | InvalidArgumentException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_openMenuItemActionPerformed
 
     private void newMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newMenuItemActionPerformed
-        TableInternalFrame table = new TableInternalFrame();
-        desktopPane.add(table);
-        table.setVisible(true);
+        addInternalFrame(new TableInternalFrame());
     }//GEN-LAST:event_newMenuItemActionPerformed
 
     private void editingTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editingTextFieldActionPerformed
@@ -300,6 +302,10 @@ public class Gui extends javax.swing.JFrame {
         }
         editClient.applyEdit(editingTextField.getText());
     }//GEN-LAST:event_editingTextFieldActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        addInternalFrame(new AnalyzedFrame());
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private static final String[][] IMPORTFILETYPES = {
         //new String[]{"Girr files (*.girr)", "girr" },
@@ -354,6 +360,7 @@ public class Gui extends javax.swing.JFrame {
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenu helpMenu;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JMenuBar menuBar;
@@ -369,5 +376,10 @@ public class Gui extends javax.swing.JFrame {
         editingTextField.setText(presentContent);
         editingTextField.setEditable(editable);
         editClient = client;
+    }
+
+    public void addInternalFrame(JInternalFrame frame) {
+        desktopPane.add(frame);
+        frame.setVisible(true);
     }
 }

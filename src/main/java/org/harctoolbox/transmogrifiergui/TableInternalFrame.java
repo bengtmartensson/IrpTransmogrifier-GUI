@@ -19,6 +19,7 @@ package org.harctoolbox.transmogrifiergui;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -39,6 +40,7 @@ import org.harctoolbox.irp.ThingsLineParser;
 public class TableInternalFrame extends javax.swing.JInternalFrame {
 
     private final static Logger logger = Logger.getLogger(TableInternalFrame.class.getName());
+    private static Properties properties = Properties.getInstance();
 
     private static TableKit loadModSequences(Map<String, ModulatedIrSequence> modSequences) {
         RawIrSequence.RawTableModel rawTableModel = new RawIrSequence.RawTableModel();
@@ -66,6 +68,7 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         }
         return new TableKit(rawTableModel, new RawIrSignal.RawTableColumnModel());
     }
+    private final String source;
 
     private <T extends TableModel> void enableSorter(JTable table, boolean state) {
         @SuppressWarnings("unchecked")
@@ -104,12 +107,23 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         barfIfNoneSelected(table);
     }
 
-    private void printTableSelectedRow(JTable table) throws ErroneousSelectionException {
+    private void printTableSelectedRow() throws ErroneousSelectionException {
         barfIfNotExactlyOneSelected(table);
         int modelRow = table.convertRowIndexToModel(table.getSelectedRow());
         NamedIrSignal.LearnedIrSignalTableModel tableModel = (NamedIrSignal.LearnedIrSignalTableModel) table.getModel();
         String str = tableModel.toPrintString(modelRow);
         System.out.println(str);
+    }
+
+    public Map<String, IrSequence> getIrSequences() {
+        LinkedHashMap<String, IrSequence> result = new LinkedHashMap<>(table.getRowCount());
+        NamedIrSignal.LearnedIrSignalTableModel tableMdl = (NamedIrSignal.LearnedIrSignalTableModel) table.getModel();
+        for (int i = 0; i < table.getRowCount(); i++) {
+            int modelRow = table.convertRowIndexToModel(i);
+            RawIrSequence rawIrSequence = ((RawIrSequence.RawTableModel) tableMdl).getCapturedIrSequence(modelRow);
+            result.put(rawIrSequence.getName(), rawIrSequence.getIrSequence());
+        }
+        return result;
     }
 
 //    public JTable getTable() {
@@ -131,6 +145,12 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
             tableModel.setValueAt(thing, r, c);
             table.repaint();
         }
+    }
+
+    public void analyze() {
+        Map<String, IrSequence> irSequences = getIrSequences();
+        AnalyzedFrame frame = new AnalyzedFrame(source, irSequences, frequency);
+        Gui.getInstance().addInternalFrame(frame);
     }
 
     private static class TableKit {
@@ -186,12 +206,13 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
      * @param tableKit
      */
     @SuppressWarnings("OverridableMethodCallInConstructor")
-    private TableInternalFrame(TableKit tableKit, String title) {
+    private TableInternalFrame(TableKit tableKit, String source) {
+        this.source = source;
         this.tableModel = tableKit.getTableModel();
         this.tableColumnModel = tableKit.getTableColumnModel();
         this.frequency = tableKit.getFrequency();
         initComponents();
-        setTitle(title + " [Raw sequences]");
+        setTitle(source + " [Raw sequences]");
     }
 
     public TableInternalFrame() {
@@ -212,10 +233,10 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
             logger.log(Level.INFO, "Parsing of {0} as ict failed", importFile);
             ThingsLineParser<IrSequence> irSignalParser = new ThingsLineParser<>(
                     (List<String> line) -> {
-                        return IrSequenceParsers.parseProntoOrRaw(line, Parameters.getTrailingGap());
+                        return IrSequenceParsers.parseProntoOrRaw(line, properties.getTrailingGap());
                     }
             );
-            Map<String, IrSequence> sequences = irSignalParser.readNamedThings(importFile.getCanonicalPath(), Parameters.getEncoding());
+            Map<String, IrSequence> sequences = irSignalParser.readNamedThings(importFile.getCanonicalPath(), properties.getEncoding());
             if (sequences.isEmpty())
                 throw new InvalidArgumentException("No parseable sequences found.");
             return loadSequences(sequences);
@@ -261,10 +282,12 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         resetRawTableColumnsMenuItem = new javax.swing.JMenuItem();
         removeUnusedMenuItem1 = new javax.swing.JMenuItem();
         hideUninterestingColumnsMenuItem1 = new javax.swing.JMenuItem();
+        analyzeMenuItem = new javax.swing.JMenuItem();
+        decodeItem = new javax.swing.JMenuItem();
         jScrollPane1 = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
 
-        rawSorterCheckBoxMenuItem.setSelected(Properties.getSorterOnRawTable());
+        rawSorterCheckBoxMenuItem.setSelected(properties.isSorterOnRawTable());
         rawSorterCheckBoxMenuItem.setText("Enable sorter");
         rawSorterCheckBoxMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -277,7 +300,6 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         moveUpMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_UP, java.awt.event.InputEvent.CTRL_MASK));
         moveUpMenuItem.setMnemonic('U');
         moveUpMenuItem.setText("Move Up");
-        moveUpMenuItem.setEnabled(!Properties.getSorterOnRawTable());
         moveUpMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveUpMenuItemActionPerformed(evt);
@@ -288,7 +310,6 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         moveDownMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DOWN, java.awt.event.InputEvent.CTRL_MASK));
         moveDownMenuItem.setMnemonic('D');
         moveDownMenuItem.setText("Move Down");
-        moveDownMenuItem.setEnabled(!Properties.getSorterOnRawTable());
         moveDownMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveDownMenuItemActionPerformed(evt);
@@ -388,6 +409,22 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         });
         rawTablePopupMenu.add(hideUninterestingColumnsMenuItem1);
 
+        analyzeMenuItem.setText("Analyze");
+        analyzeMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyzeMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(analyzeMenuItem);
+
+        decodeItem.setText("Decode");
+        decodeItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                decodeItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(decodeItem);
+
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
@@ -429,7 +466,7 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
 
     private void rawSorterCheckBoxMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rawSorterCheckBoxMenuItemActionPerformed
         boolean state = rawSorterCheckBoxMenuItem.isSelected();
-        Properties.setSorterOnRawTable(state);
+        properties.setSorterOnRawTable(state);
         enableSorter(table, state);
         moveDownMenuItem.setEnabled(!state);
         moveUpMenuItem.setEnabled(!state);
@@ -506,7 +543,7 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
 
     private void printTableRowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printTableRowMenuItemActionPerformed
         try {
-            printTableSelectedRow(table);
+            printTableSelectedRow();
         } catch (ErroneousSelectionException ex) {
             logger.severe(ex.getLocalizedMessage());
         }
@@ -569,8 +606,18 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         }
     }//GEN-LAST:event_tableMouseReleased
 
+    private void analyzeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeMenuItemActionPerformed
+        analyze();
+    }//GEN-LAST:event_analyzeMenuItemActionPerformed
+
+    private void decodeItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decodeItemActionPerformed
+
+    }//GEN-LAST:event_decodeItemActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem analyzeMenuItem;
+    private javax.swing.JMenuItem decodeItem;
     private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JMenuItem hideColumnMenuItem;
     private javax.swing.JMenuItem hideUninterestingColumnsMenuItem1;

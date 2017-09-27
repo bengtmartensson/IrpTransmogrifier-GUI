@@ -292,5 +292,9 @@ public class RawIrSequence extends NamedIrSignal {
             scrollRequest = true;
             unsavedChanges = true;
         }
+
+        String getName(int modelRow) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 }

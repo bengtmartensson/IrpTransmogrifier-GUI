@@ -11,7 +11,7 @@
         <MenuItem class="javax.swing.JCheckBoxMenuItem" name="rawSorterCheckBoxMenuItem">
           <Properties>
             <Property name="selected" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="org.harctoolbox.transmogrifiergui.Properties.getSorterOnRawTable()" type="code"/>
+              <Connection code="properties.isSorterOnRawTable()" type="code"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Enable sorter"/>
           </Properties>
@@ -28,9 +28,6 @@
             </Property>
             <Property name="mnemonic" type="int" value="85"/>
             <Property name="text" type="java.lang.String" value="Move Up"/>
-            <Property name="enabled" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="!org.harctoolbox.transmogrifiergui.Properties.getSorterOnRawTable()" type="code"/>
-            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moveUpMenuItemActionPerformed"/>
@@ -43,9 +40,6 @@
             </Property>
             <Property name="mnemonic" type="int" value="68"/>
             <Property name="text" type="java.lang.String" value="Move Down"/>
-            <Property name="enabled" type="boolean" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="!org.harctoolbox.transmogrifiergui.Properties.getSorterOnRawTable()" type="code"/>
-            </Property>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moveDownMenuItemActionPerformed"/>
@@ -147,6 +141,22 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hideUninterestingColumnsMenuItem1ActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="analyzeMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Analyze"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="analyzeMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="decodeItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Decode"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="decodeItemActionPerformed"/>
           </Events>
         </MenuItem>
       </SubComponents>
