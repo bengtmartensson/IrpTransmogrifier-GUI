@@ -47,10 +47,19 @@
         </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator11">
         </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="addEmptySequenceMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Add empty sequence"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addEmptySequenceMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator1">
+        </Component>
         <MenuItem class="javax.swing.JMenuItem" name="rawFromClipboardMenuItem">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Import signal from clipboard"/>
-            <Property name="toolTipText" type="java.lang.String" value="Not yet implemented"/>
+            <Property name="text" type="java.lang.String" value="Create signal from clipboard data"/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>

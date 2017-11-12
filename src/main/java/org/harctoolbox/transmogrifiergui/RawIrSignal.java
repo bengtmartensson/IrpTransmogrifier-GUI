@@ -284,5 +284,10 @@ public class RawIrSignal extends NamedIrSignal {
         public String getType() {
             return "raw";
         }
+
+        @Override
+        public String normalize(String text, int c) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 }

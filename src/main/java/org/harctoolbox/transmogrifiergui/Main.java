@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] args) {
         if (args.length == 0 || args[0].equals("--gui"))
             //Gui.main(args);
-            Gui.main(new String[] { "/home/bengt/jp1/mce_keyboard/A to Z .ict" });
+            Gui.main(new String[] { "src/test/ict/A to Z .ict" });
         else
             IrpTransmogrifier.main(args);
     }

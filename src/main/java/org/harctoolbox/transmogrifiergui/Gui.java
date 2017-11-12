@@ -52,7 +52,7 @@ public class Gui extends javax.swing.JFrame {
         initComponents();
         setupConsole();
         setupInitData(data);
-        System.out.println("Welcome to TransmogrifierGUI!");
+        System.out.println("Welcome to IrpTransmogrifierGUI!");
     }
 
     private void setupConsole() {
@@ -90,6 +90,7 @@ public class Gui extends javax.swing.JFrame {
         desktopPane = new javax.swing.JDesktopPane();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        newSequenceTableMenuItem = new javax.swing.JMenuItem();
         openMenuItem = new javax.swing.JMenuItem();
         saveMenuItem = new javax.swing.JMenuItem();
         saveAsMenuItem = new javax.swing.JMenuItem();
@@ -155,6 +156,15 @@ public class Gui extends javax.swing.JFrame {
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("File");
+
+        newSequenceTableMenuItem.setMnemonic('N');
+        newSequenceTableMenuItem.setText("New Sequencetable");
+        newSequenceTableMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newSequenceTableMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(newSequenceTableMenuItem);
 
         openMenuItem.setMnemonic('o');
         openMenuItem.setText("Open");
@@ -300,12 +310,20 @@ public class Gui extends javax.swing.JFrame {
             logger.severe("No edit target");
             return;
         }
-        editClient.applyEdit(editingTextField.getText());
+        int pos = editingTextField.getCaret().getDot();
+        String normalized = editClient.normalize(editingTextField.getText());
+        editingTextField.setText(normalized);
+        editingTextField.setCaretPosition(pos);
+        editClient.applyEdit(normalized);
     }//GEN-LAST:event_editingTextFieldActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         addInternalFrame(new AnalyzedFrame());
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void newSequenceTableMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newSequenceTableMenuItemActionPerformed
+        addInternalFrame(new TableInternalFrame());
+    }//GEN-LAST:event_newSequenceTableMenuItemActionPerformed
 
     private static final String[][] IMPORTFILETYPES = {
         //new String[]{"Girr files (*.girr)", "girr" },
@@ -365,6 +383,7 @@ public class Gui extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem newMenuItem;
+    private javax.swing.JMenuItem newSequenceTableMenuItem;
     private javax.swing.JMenuItem openMenuItem;
     private javax.swing.JMenu optionsMenu;
     private javax.swing.JMenuItem pasteMenuItem;

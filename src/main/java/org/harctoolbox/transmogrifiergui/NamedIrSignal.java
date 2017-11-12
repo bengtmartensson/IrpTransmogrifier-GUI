@@ -221,6 +221,8 @@ public abstract class NamedIrSignal {
                     removeColumn(col);
             }
         }
+
+        public final String normalize(String text, int c){return null;};
     }
 
     public abstract static class LearnedIrSignalTableModel extends DefaultTableModel {
@@ -464,5 +466,7 @@ public abstract class NamedIrSignal {
         boolean hasUnsavedChanges() {
             return unsavedChanges;
         }
+
+        public abstract String normalize(String text, int c);
     }
 }

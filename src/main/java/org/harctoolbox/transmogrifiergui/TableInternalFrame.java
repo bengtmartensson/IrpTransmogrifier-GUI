@@ -29,6 +29,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.harctoolbox.guicomponents.CopyClipboardText;
 import org.harctoolbox.ircore.InvalidArgumentException;
 import org.harctoolbox.ircore.IrSequence;
 import org.harctoolbox.ircore.IrSignal;
@@ -153,37 +154,47 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         Gui.getInstance().addInternalFrame(frame);
     }
 
+    public String normalize(String text) {
+        int row = table.getSelectedRow();
+        int column = table.getSelectedColumn();
+        if (row < 0 || column < 0)
+            return "invalid";
+
+        int c = table.convertColumnIndexToModel(column);
+        return tableModel.normalize(text, c);
+    }
+
     private static class TableKit {
 
-        private TableModel tableModel;
-        private TableColumnModel tableColumnModel;
+        private NamedIrSignal.LearnedIrSignalTableModel tableModel;
+        private NamedIrSignal.LearnedIrSignalTableColumnModel tableColumnModel;
         private Double frequency;
 
-        TableKit(TableModel tableModel, TableColumnModel tableColumnModel, Double frequency) {
+        TableKit(NamedIrSignal.LearnedIrSignalTableModel tableModel, NamedIrSignal.LearnedIrSignalTableColumnModel tableColumnModel, Double frequency) {
             this.tableModel = tableModel;
             this.tableColumnModel = tableColumnModel;
             this.frequency = frequency;
         }
 
         TableKit() {
-            this(new RawIrSignal.RawTableModel(), new RawIrSignal.RawTableColumnModel(), null);
+            this(new RawIrSequence.RawTableModel(), new RawIrSequence.RawTableColumnModel(), null);
         }
 
-        TableKit(TableModel tableModel, TableColumnModel tableColumnModel) {
+        TableKit(NamedIrSignal.LearnedIrSignalTableModel tableModel, NamedIrSignal.LearnedIrSignalTableColumnModel tableColumnModel) {
             this(tableModel, tableColumnModel, null);
         }
 
         /**
          * @return the tableModel
          */
-        public TableModel getTableModel() {
+        public NamedIrSignal.LearnedIrSignalTableModel getTableModel() {
             return tableModel;
         }
 
         /**
          * @return the tableColumnModel
          */
-        public TableColumnModel getTableColumnModel() {
+        public NamedIrSignal.LearnedIrSignalTableColumnModel getTableColumnModel() {
             return tableColumnModel;
         }
 
@@ -195,8 +206,8 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    private TableModel tableModel;
-    private TableColumnModel tableColumnModel;
+    private NamedIrSignal.LearnedIrSignalTableModel tableModel;
+    private NamedIrSignal.LearnedIrSignalTableColumnModel tableColumnModel;
     private Double frequency;
 
     //private RawIrSignal.RawTableModel rawTableModel;
@@ -269,6 +280,8 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         moveUpMenuItem = new javax.swing.JMenuItem();
         moveDownMenuItem = new javax.swing.JMenuItem();
         jSeparator11 = new javax.swing.JPopupMenu.Separator();
+        addEmptySequenceMenuItem = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
         rawFromClipboardMenuItem = new javax.swing.JMenuItem();
         jSeparator18 = new javax.swing.JPopupMenu.Separator();
         plotMenuItem = new javax.swing.JMenuItem();
@@ -318,8 +331,16 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         rawTablePopupMenu.add(moveDownMenuItem);
         rawTablePopupMenu.add(jSeparator11);
 
-        rawFromClipboardMenuItem.setText("Import signal from clipboard");
-        rawFromClipboardMenuItem.setToolTipText("Not yet implemented");
+        addEmptySequenceMenuItem.setText("Add empty sequence");
+        addEmptySequenceMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addEmptySequenceMenuItemActionPerformed(evt);
+            }
+        });
+        rawTablePopupMenu.add(addEmptySequenceMenuItem);
+        rawTablePopupMenu.add(jSeparator1);
+
+        rawFromClipboardMenuItem.setText("Create signal from clipboard data");
         rawFromClipboardMenuItem.setEnabled(false);
         rawFromClipboardMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -514,7 +535,8 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
     }
 
     private void rawFromClipboardMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rawFromClipboardMenuItemActionPerformed
-//        String text = (new CopyClipboardText(null)).fromClipboard();
+        String text = (new CopyClipboardText(null)).fromClipboard();
+
 //        try {
 //            IrSignal irSignal = InterpretStringHardware.interpretString(text, IrpUtils.defaultFrequency,
 //                properties.getInvokeRepeatFinder(), properties.getInvokeCleaner(),
@@ -524,7 +546,6 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
 //        } catch (IrpMasterException ex) {
 //            logger.severe(ex);;
 //        }
-        logger.severe("Not yet implemented");
     }//GEN-LAST:event_rawFromClipboardMenuItemActionPerformed
 
     private void plotMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_plotMenuItemActionPerformed
@@ -614,14 +635,20 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
 
     }//GEN-LAST:event_decodeItemActionPerformed
 
+    private void addEmptySequenceMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addEmptySequenceMenuItemActionPerformed
+        RawIrSequence rawIrSequence = new RawIrSequence(new IrSequence(), "unnamed");
+        tableModel.addSignal(rawIrSequence);
+    }//GEN-LAST:event_addEmptySequenceMenuItemActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem addEmptySequenceMenuItem;
     private javax.swing.JMenuItem analyzeMenuItem;
     private javax.swing.JMenuItem decodeItem;
     private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JMenuItem hideColumnMenuItem;
     private javax.swing.JMenuItem hideUninterestingColumnsMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator11;
     private javax.swing.JPopupMenu.Separator jSeparator18;
     private javax.swing.JPopupMenu.Separator jSeparator25;

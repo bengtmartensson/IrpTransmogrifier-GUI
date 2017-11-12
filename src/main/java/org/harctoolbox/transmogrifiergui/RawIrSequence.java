@@ -97,7 +97,7 @@ public class RawIrSequence extends NamedIrSignal {
 //    }
 
     public void setSequence(String str) throws OddSequenceLengthException {
-        irSequence = new IrSequence(str);
+        irSequence = new IrSequence(str, Properties.getInstance().getTrailingGap());
     }
 
 //    public void setRepeatSequence(String str) throws OddSequenceLengthException {
@@ -238,6 +238,13 @@ public class RawIrSequence extends NamedIrSignal {
 //            RawIrSignal rir = getCapturedIrSignal(row);
 //            return rir.toCommand();
 //        }
+
+        @Override
+        public String normalize(String text, int c) {
+            return c == CapturedIrSignalColumns.POS_SEQUENCE
+                    ? IrSequence.normalize(text, Properties.getInstance().getTrailingGap(), true, " ")
+                    : text;
+        }
 
         @Override
         public void fireTableCellUpdated(int row, int column) {
