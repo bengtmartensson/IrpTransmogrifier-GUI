@@ -28,6 +28,7 @@ import java.util.Map;
 import org.harctoolbox.analyze.Analyzer;
 import org.harctoolbox.analyze.Burst;
 import org.harctoolbox.analyze.NoDecoderMatchException;
+import org.harctoolbox.ircore.InvalidArgumentException;
 import org.harctoolbox.ircore.IrCoreUtils;
 import org.harctoolbox.ircore.IrSequence;
 import org.harctoolbox.ircore.ThisCannotHappenException;
@@ -54,7 +55,7 @@ public class AnalyzedFrame extends javax.swing.JInternalFrame {
         setTitle(source + " [Analysis]");
     }
 
-    public AnalyzedFrame(String source, Map<String, IrSequence> irSequences, double frequency) {
+    public AnalyzedFrame(String source, Map<String, IrSequence> irSequences, double frequency) throws InvalidArgumentException {
         this(source);
         analyzer = new Analyzer(irSequences.values(), frequency, properties.isRepeatFinder(),
                 properties.getAbsoluteTolerance(), properties.getRelativeTolerance());
@@ -162,7 +163,7 @@ public class AnalyzedFrame extends javax.swing.JInternalFrame {
                     try {
                         String definitionName = definition.getKey();
                         int length = protocol.guessParameterLength(definitionName);
-                        long num = definition.getValue().toNumber();
+                        long num = definition.getValue().toLong();
                         parameterUsageTextArea.append("\t" + IrCoreUtils.formatIntegerWithLeadingZeros(num, properties.getRadix(), length));
                     } catch (NameUnassignedException ex) {
                         throw new ThisCannotHappenException(ex);

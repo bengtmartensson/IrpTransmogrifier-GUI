@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.harctoolbox.analyze.Burst;
 import org.harctoolbox.irp.BitDirection;
-import org.harctoolbox.irp.IrpObject;
 
 public class Properties {
     private static Properties instance = new Properties();
@@ -36,9 +35,9 @@ public class Properties {
     private Double relativeTolerance = 0.2d;
     private Double frequency = 38000d;
     private boolean sorterOnRawTable = false;
-    private Double maxRoundingError = Burst.Preferences.DEFAULTMAXROUNDINGERROR;
-    private Double maxUnits = Burst.Preferences.DEFAULTMAXUNITS;
-    private Double maxMicroSeconds = Burst.Preferences.DEFAULTMAXMICROSECONDS;
+    private Double maxRoundingError = Burst.Preferences.DEFAULT_MAX_ROUNDING_ERROR;
+    private Double maxUnits = Burst.Preferences.DEFAULT_MAX_UNITS;
+    private Double maxMicroSeconds = Burst.Preferences.DEFAULT_MAX_MICROSECONDS;
     private String timeBaseString = null;
     private BitDirection bitDirection = BitDirection.lsb;
     private boolean extent = false;

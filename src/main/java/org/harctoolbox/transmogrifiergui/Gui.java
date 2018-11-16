@@ -27,6 +27,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import org.harctoolbox.guicomponents.SelectFile;
 import org.harctoolbox.ircore.InvalidArgumentException;
+import org.harctoolbox.ircore.OddSequenceLengthException;
 
 public class Gui extends javax.swing.JFrame {
 
@@ -311,10 +312,15 @@ public class Gui extends javax.swing.JFrame {
             return;
         }
         int pos = editingTextField.getCaret().getDot();
-        String normalized = editClient.normalize(editingTextField.getText());
-        editingTextField.setText(normalized);
+        String normalized;
+        try {
+            normalized = editClient.normalize(editingTextField.getText());
+            editingTextField.setText(normalized);
         editingTextField.setCaretPosition(pos);
         editClient.applyEdit(normalized);
+        } catch (OddSequenceLengthException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_editingTextFieldActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed

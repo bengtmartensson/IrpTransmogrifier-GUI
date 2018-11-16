@@ -25,6 +25,7 @@ import java.util.List;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import org.harctoolbox.ircore.OddSequenceLengthException;
 
 /**
  *
@@ -467,6 +468,6 @@ public abstract class NamedIrSignal {
             return unsavedChanges;
         }
 
-        public abstract String normalize(String text, int c);
+        public abstract String normalize(String text, int c) throws OddSequenceLengthException;
     }
 }

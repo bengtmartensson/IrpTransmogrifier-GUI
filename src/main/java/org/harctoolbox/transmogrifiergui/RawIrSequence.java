@@ -240,7 +240,7 @@ public class RawIrSequence extends NamedIrSignal {
 //        }
 
         @Override
-        public String normalize(String text, int c) {
+        public String normalize(String text, int c) throws OddSequenceLengthException {
             return c == CapturedIrSignalColumns.POS_SEQUENCE
                     ? IrSequence.normalize(text, Properties.getInstance().getTrailingGap(), true, " ")
                     : text;

@@ -26,17 +26,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.harctoolbox.guicomponents.CopyClipboardText;
+import org.harctoolbox.ircore.IctImporter;
 import org.harctoolbox.ircore.InvalidArgumentException;
 import org.harctoolbox.ircore.IrSequence;
 import org.harctoolbox.ircore.IrSignal;
 import org.harctoolbox.ircore.ModulatedIrSequence;
-import org.harctoolbox.irp.IctImporter;
-import org.harctoolbox.irp.IrSequenceParsers;
-import org.harctoolbox.irp.ThingsLineParser;
+import org.harctoolbox.ircore.MultiParser;
+import org.harctoolbox.ircore.OddSequenceLengthException;
+import org.harctoolbox.ircore.ThingsLineParser;
 
 public class TableInternalFrame extends javax.swing.JInternalFrame {
 
@@ -148,13 +148,13 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    public void analyze() {
+    public void analyze() throws InvalidArgumentException {
         Map<String, IrSequence> irSequences = getIrSequences();
         AnalyzedFrame frame = new AnalyzedFrame(source, irSequences, frequency);
         Gui.getInstance().addInternalFrame(frame);
     }
 
-    public String normalize(String text) {
+    public String normalize(String text) throws OddSequenceLengthException {
         int row = table.getSelectedRow();
         int column = table.getSelectedColumn();
         if (row < 0 || column < 0)
@@ -244,7 +244,7 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
             logger.log(Level.INFO, "Parsing of {0} as ict failed", importFile);
             ThingsLineParser<IrSequence> irSignalParser = new ThingsLineParser<>(
                     (List<String> line) -> {
-                        return IrSequenceParsers.parseProntoOrRaw(line, properties.getTrailingGap());
+                        return (MultiParser.newIrCoreParser(line)).toModulatedIrSequence(ModulatedIrSequence.DEFAULT_FREQUENCY, null); // FIXME
                     }
             );
             Map<String, IrSequence> sequences = irSignalParser.readNamedThings(importFile.getCanonicalPath(), properties.getEncoding());
@@ -628,7 +628,11 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_tableMouseReleased
 
     private void analyzeMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeMenuItemActionPerformed
-        analyze();
+        try {
+            analyze();
+        } catch (InvalidArgumentException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_analyzeMenuItemActionPerformed
 
     private void decodeItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_decodeItemActionPerformed
