@@ -25,8 +25,8 @@ public class Main {
         if (args.length == 0 || args[0].equals("--gui")) {
             // This sillyness is just because the Gradle integration in Netbeans is lacking...
             //Gui.main(args);
-            if (new File("src/test/ict/A to Z .ict").exists())
-                Gui.main(new String[] { "/home/bengt/jp1/mce_keyboard/A to Z .ict" });
+            if (new File("src/test/ict/A to Z.ict").exists())
+                Gui.main(new String[] { "src/test/ict/A to Z.ict" });
             else
                 Gui.main(args);
         } else

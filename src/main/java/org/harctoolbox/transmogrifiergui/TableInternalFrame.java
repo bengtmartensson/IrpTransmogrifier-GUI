@@ -16,9 +16,13 @@
  */
 package org.harctoolbox.transmogrifiergui;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.ParseException;
+import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,15 +32,19 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import org.harctoolbox.girr.Command;
 import org.harctoolbox.guicomponents.CopyClipboardText;
-import org.harctoolbox.ircore.IctImporter;
 import org.harctoolbox.ircore.InvalidArgumentException;
+import org.harctoolbox.ircore.IrCoreException;
+import org.harctoolbox.ircore.IrCoreUtils;
 import org.harctoolbox.ircore.IrSequence;
 import org.harctoolbox.ircore.IrSignal;
 import org.harctoolbox.ircore.ModulatedIrSequence;
 import org.harctoolbox.ircore.MultiParser;
 import org.harctoolbox.ircore.OddSequenceLengthException;
 import org.harctoolbox.ircore.ThingsLineParser;
+import org.harctoolbox.irp.IrpException;
+import org.harctoolbox.irscrutinizer.importer.IctImporter;
 
 public class TableInternalFrame extends javax.swing.JInternalFrame {
 
@@ -59,6 +67,13 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         return new TableKit(rawTableModel, new RawIrSequence.RawTableColumnModel(), average);
     }
 
+    private static TableKit loadModSequences(Collection<Command> cmds) throws IrpException, IrCoreException {
+        Map<String, ModulatedIrSequence> map = new HashMap<>(cmds.size());
+        for (Command cmd : cmds)
+            map.put(cmd.getName(), cmd.toIrSignal().toModulatedIrSequence());
+        return loadModSequences(map);
+    }
+
     private static TableKit loadSequences(Map<String, IrSequence> signals) {
         RawIrSignal.RawTableModel rawTableModel = new RawIrSignal.RawTableModel();
         for (Map.Entry<String, IrSequence> kvp : signals.entrySet()) {
@@ -69,6 +84,7 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
         }
         return new TableKit(rawTableModel, new RawIrSignal.RawTableColumnModel());
     }
+
     private final String source;
 
     private <T extends TableModel> void enableSorter(JTable table, boolean state) {
@@ -235,17 +251,19 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
     }
 
     private static TableKit loadFile(File importFile) throws IOException, InvalidArgumentException {
-        try {
-            Map<String, ModulatedIrSequence> modSequences = IctImporter.parse(importFile.getCanonicalPath());
-            if (modSequences.isEmpty())
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(importFile), IrCoreUtils.DEFAULT_CHARSET))) {
+            Collection<Command> cmds = IctImporter.importer(reader, importFile.getCanonicalPath());
+
+            //Map<String, ModulatedIrSequence> modSequences = IctImporter.parse(importFile.getCanonicalPath());
+            if (cmds.isEmpty())
                 throw new InvalidArgumentException("No parseable sequences found.");
-            return loadModSequences(modSequences);
-        } catch (ParseException ex) {
+            return loadModSequences(cmds);
+        } catch (IrpException | IrCoreException ex) {
             logger.log(Level.INFO, "Parsing of {0} as ict failed", importFile);
             ThingsLineParser<IrSequence> irSignalParser = new ThingsLineParser<>(
                     (List<String> line) -> {
                         return (MultiParser.newIrCoreParser(line)).toModulatedIrSequence(ModulatedIrSequence.DEFAULT_FREQUENCY, null); // FIXME
-                    }
+                    }, "#"
             );
             Map<String, IrSequence> sequences = irSignalParser.readNamedThings(importFile.getCanonicalPath(), properties.getEncoding());
             if (sequences.isEmpty())

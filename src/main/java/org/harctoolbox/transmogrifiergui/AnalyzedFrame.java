@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,7 @@ public class AnalyzedFrame extends javax.swing.JInternalFrame {
         Analyzer.AnalyzerParams params = new Analyzer.AnalyzerParams(analyzer.getFrequency(), properties.getTimeBaseString(),
                 properties.getBitDirection(),
                 properties.isExtent(), properties.getParameterWidths(), properties.getMaxParameterWidth(), properties.isInvert(),
-                burstPrefs);
+                burstPrefs, new ArrayList<>(0));
         //int maxNameLength = IrCoreUtils.maxLength(names);
 
         // TODO: Replace by tables
@@ -175,15 +176,10 @@ public class AnalyzedFrame extends javax.swing.JInternalFrame {
             i++;
         }
 
-        //if (properties.bitUsage) {
-        try {
-            Map<String, BitCounter> bitStatistics = BitCounter.scrutinizeProtocols(protocols);
-            bitStatistics.entrySet().forEach((kvp) -> {
-                bitUsageTextArea.append(kvp.getKey() + "\t" + kvp.getValue().toString() + "\n");
-            });
-        } catch (NameUnassignedException ex) {
-            throw new ThisCannotHappenException(ex);
-        }
+        Map<String, BitCounter> bitStatistics = BitCounter.scrutinizeProtocols(protocols);
+        bitStatistics.entrySet().forEach((kvp) -> {
+            bitUsageTextArea.append(kvp.getKey() + "\t" + kvp.getValue().toString() + "\n");
+        });
     }
 
     /**
