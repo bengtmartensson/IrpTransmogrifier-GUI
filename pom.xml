@@ -7,7 +7,7 @@
     <groupId>org.harctoolbox</groupId>
     <artifactId>IrpTransmogrifier-GUI</artifactId>
     <packaging>jar</packaging>
-    <version>0.2.6-SNAPSHOT</version>
+    <version>0.2.7-SNAPSHOT</version>
     <name>${project.artifactId}</name>
     <licenses>
         <license>
@@ -22,7 +22,7 @@
         <project.nameLowercase>irptransmogrifiergui</project.nameLowercase>
         <!--project.icon>/usr/local/share/${project.nameLowercase}/${project.nameLowercase}.png</project.icon-->
         <!--project.exepath>/usr/local/bin/${project.nameLowercase}</project.exepath-->
-        <project.installdir>/usr/local/share/${project.nameLowercase}</project.installdir> <!-- Where mvn deploy unpacks the bin.zip -->
+        <!--project.installdir>/usr/local/share/${project.nameLowercase}</project.installdir--> <!-- Where mvn deploy unpacks the bin.zip -->
         <!--bundledjdk_url_sans_file>https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.5%2B10/</bundledjdk_url_sans_file>
         <bundledjdk.linux>OpenJDK11U-jdk_x64_linux_hotspot_11.0.5_10.tar.gz</bundledjdk.linux>
         <bundledjdk.windows>OpenJDK11U-jdk_x86-32_windows_hotspot_11.0.5_10.zip</bundledjdk.windows>
@@ -641,7 +641,7 @@
         <dependency>
             <groupId>org.harctoolbox</groupId>
             <artifactId>IrScrutinizer</artifactId> <!-- Implicit invokes DevSlashLirc -->
-            <version>2.2.6-SNAPSHOT</version>
+            <version>2.2.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>

@@ -251,7 +251,7 @@ public class TableInternalFrame extends javax.swing.JInternalFrame {
     }
 
     private static TableKit loadFile(File importFile) throws IOException, InvalidArgumentException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(importFile), IrCoreUtils.DEFAULT_CHARSET))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(importFile), IrCoreUtils.UTF8))) {
             Collection<Command> cmds = IctImporter.importer(reader, importFile.getCanonicalPath());
 
             //Map<String, ModulatedIrSequence> modSequences = IctImporter.parse(importFile.getCanonicalPath());
