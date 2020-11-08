@@ -641,9 +641,9 @@
         <dependency>
             <groupId>org.harctoolbox</groupId>
             <artifactId>IrScrutinizer</artifactId> <!-- Implicit invokes DevSlashLirc -->
-            <version>2.2.7-SNAPSHOT</version>
+            <version>2.3.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>7.0.0</version>
@@ -654,6 +654,6 @@
                     <artifactId>jcommander</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency-->
     </dependencies>
 </project>
